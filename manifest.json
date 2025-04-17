@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Voice Typewriter",
-  "description": "Dictate text with optional Groq LLM enhancement and insert it at your cursor position",
+  "description": "A Chrome extension that enables voice-to-text input directly in your browser, with optional Groq LLM-powered text enhancement",
   "version": "1.0",
   "action": {
     "default_popup": "popup.html",
