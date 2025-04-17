@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Voice Typewriter</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      width: 320px;
+      padding: 16px;
+      margin: 0;
+      background-color: #f9f9f9;
+    }
+    h1 {
+      font-size: 18px;
+      margin: 0 0 16px 0;
+      color: #333;
+      text-align: center;
+    }
+    .header-container {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      width: 100%;
+      margin-bottom: 16px;
+      position: relative;
+    }
+    .header-title {
+      font-size: 18px;
+      color: #333;
+      flex-grow: 1;
+      text-align: center;
+      margin: 0;
+    }
+    .settings-icon {
+      width: 24px;
+      height: 24px;
+      cursor: pointer;
+      color: #666;
+      transition: color 0.2s;
+      position: absolute;
+      right: 0;
+    }
+    .settings-icon:hover {
+      color: #4285f4;
+    }
+    .container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .language-selector {
+      margin-bottom: 16px;
+      width: 100%;
+      max-width: 200px;
+    }
+    .language-selector select {
+      width: 100%;
+      padding: 8px;
+      border-radius: 4px;
+      border: 1px solid #dadce0;
+      background-color: white;
+      font-size: 14px;
+      color: #333;
+    }
+    .language-selector select:focus {
+      border-color: #4285f4;
+      outline: none;
+    }
+    .language-selector label {
+      display: block;
+      margin-bottom: 6px;
+      font-size: 14px;
+      color: #666;
+    }
+    #dictateButton {
+      padding: 12px 20px;
+      font-size: 16px;
+      background-color: #4285f4;
+      color: white;
+      border: none;
+      border-radius: 50px;
+      cursor: pointer;
+      transition: background-color 0.3s;
+      margin-bottom: 16px;
+      width: 100%;
+      max-width: 200px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+    #dictateButton:hover {
+      background-color: #3367d6;
+    }
+    #dictateButton:disabled {
+      background-color: #ccc;
+      cursor: not-allowed;
+    }
+    #dictateButton.listening {
+      background-color: #ea4335;
+    }
+    #dictateButton.recording {
+      background-color: #ea4335;
+    }
+    #dictateButton.processing {
+      background-color: #fbbc05;
+    }
+    #statusText {
+      font-size: 14px;
+      color: #666;
+      margin-bottom: 16px;
+      text-align: center;
+      min-height: 20px;
+    }
+    .footer {
+      font-size: 12px;
+      color: #666;
+      text-align: center;
+      margin-top: 16px;
+      display: flex;
+      justify-content: space-between;
+      width: 100%;
+    }
+    a {
+      color: #4285f4;
+      text-decoration: none;
+    }
+    a:hover {
+      text-decoration: underline;
+    }
+    .keyboard-shortcut {
+      background-color: #f1f1f1;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-family: monospace;
+      border: 1px solid #ddd;
+      display: inline-block;
+      margin-top: 8px;
+      font-size: 12px;
+    }
+    .help-link {
+      font-size: 12px;
+      margin-top: 5px;
+      text-align: center;
+      display: block;
+    }
+    .permission-instructions {
+      background-color: #fff3e0;
+      border: 1px solid #ffe0b2;
+      border-radius: 4px;
+      padding: 12px;
+      margin-top: 12px;
+      font-size: 12px;
+      display: none;
+      width: 100%;
+      box-sizing: border-box;
+      max-width: 280px;
+    }
+    .permission-instructions.show {
+      display: block;
+    }
+    .permission-instructions h3 {
+      margin-top: 0;
+      margin-bottom: 8px;
+      font-size: 14px;
+      color: #e65100;
+      text-align: center;
+    }
+    .permission-instructions ol {
+      margin: 0;
+      padding-left: 20px;
+    }
+    .permission-instructions li {
+      margin-bottom: 4px;
+    }
+    #permissionBtn {
+      background-color: #ff9800;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      padding: 8px 12px;
+      font-size: 12px;
+      cursor: pointer;
+      margin-top: 8px;
+      width: 100%;
+      font-weight: 500;
+    }
+    #permissionBtn:hover {
+      background-color: #e65100;
+    }
+    #settingsBtn {
+      background-color: #4285f4;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      padding: 12px 16px;
+      font-size: 14px;
+      cursor: pointer;
+      width: 100%;
+      font-weight: 500;
+    }
+    #settingsBtn:hover {
+      background-color: #3367d6;
+    }
+    .record-controls {
+      display: none;
+      margin-top: 10px;
+      width: 100%;
+      max-width: 200px;
+    }
+    .record-controls.show {
+      display: flex;
+      justify-content: space-between;
+    }
+    .record-button {
+      background-color: #34a853;
+      color: white;
+      border: none;
+      border-radius: 50%;
+      width: 48px;
+      height: 48px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+    .record-button:hover {
+      background-color: #2e8e4d;
+    }
+    .record-button:disabled {
+      background-color: #ccc;
+      cursor: not-allowed;
+    }
+    .stop-button {
+      background-color: #ea4335;
+      color: white;
+      border: none;
+      border-radius: 50%;
+      width: 48px;
+      height: 48px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+    .stop-button:hover {
+      background-color: #d32f2f;
+    }
+    .stop-button:disabled {
+      background-color: #ccc;
+      cursor: not-allowed;
+    }
+    .record-icon {
+      width: 20px;
+      height: 20px;
+      background-color: white;
+      border-radius: 50%;
+    }
+    .stop-icon {
+      width: 14px;
+      height: 14px;
+      background-color: white;
+    }
+    .timer {
+      font-size: 12px;
+      color: #666;
+      margin-top: 8px;
+      text-align: center;
+    }
+    .asr-method {
+      font-size: 12px;
+      color: #666;
+      margin-top: 10px;
+      text-align: center;
+      background-color: #f1f1f1;
+      padding: 4px 8px;
+      border-radius: 4px;
+      display: inline-block;
+    }
+    .api-key-prompt {
+      background-color: #e8f0fe;
+      border: 1px solid #4285f4;
+      border-radius: 4px;
+      padding: 12px;
+      margin-top: 12px;
+      font-size: 12px;
+      display: none;
+      width: 100%;
+      box-sizing: border-box;
+      max-width: 280px;
+    }
+    .api-key-prompt.show {
+      display: block;
+    }
+    .api-key-prompt h3 {
+      margin-top: 0;
+      margin-bottom: 8px;
+      font-size: 14px;
+      color: #1a73e8;
+      text-align: center;
+    }
+    .api-key-prompt p {
+      margin: 0 0 12px 0;
+      text-align: center;
+    }
+    .api-key-prompt input {
+      width: 100%;
+      padding: 8px;
+      margin-bottom: 10px;
+      border: 1px solid #dadce0;
+      border-radius: 4px;
+      box-sizing: border-box;
+      font-size: 12px;
+    }
+    .api-key-prompt button {
+      background-color: #4285f4;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      padding: 8px 12px;
+      font-size: 12px;
+      cursor: pointer;
+      width: 100%;
+      font-weight: 500;
+    }
+    .api-key-prompt button:hover {
+      background-color: #3367d6;
+    }
+    .api-key-prompt .status {
+      font-size: 11px;
+      margin-top: 8px;
+      text-align: center;
+      min-height: 14px;
+    }
+    .api-key-prompt .status.error {
+      color: #d93025;
+    }
+    .api-key-prompt .status.success {
+      color: #188038;
+    }
+  </style>
+</head>
+<body>
+  <div class="header-container">
+    <h1 class="header-title">Voice Typewriter</h1>
+    <a href="options.html" target="_blank" class="settings-icon" title="Settings">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+        <path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/>
+      </svg>
+    </a>
+  </div>
+  <div class="container">
+    <button id="dictateButton">Start Dictation</button>
+    <div id="statusText">Ready</div>
+    
+    <div id="recordControls" class="record-controls">
+      <button id="recordButton" class="record-button" title="Start Recording">
+        <div class="record-icon"></div>
+      </button>
+      <button id="stopButton" class="stop-button" title="Stop Recording">
+        <div class="stop-icon"></div>
+      </button>
+    </div>
+    <div id="recordingTimer" class="timer"></div>
+    
+    <div id="apiKeyPrompt" class="api-key-prompt">
+      <h3>Groq API Key Required</h3>
+      <p>Please enter your Groq API key to use speech recognition</p>
+      <input type="password" id="apiKeyInput" placeholder="Enter your Groq API key">
+      <button id="saveApiKeyBtn">Save API Key</button>
+      <div id="apiKeyStatus" class="status"></div>
+      <p style="margin-top: 12px; font-size: 12px; text-align: center;">
+        <a href="https://console.groq.com/keys" target="_blank">Create a Groq API key</a>
+      </p>
+    </div>
+    
+    <div id="permissionInstructions" class="permission-instructions">
+      <h3>Microphone Access Required</h3>
+      <div style="margin-top: 12px;">
+        <button id="settingsBtn">Open Chrome Settings</button>
+        <div style="margin-top: 10px; padding: 8px; background-color: #fff; border-radius: 4px; border: 1px solid #ffe0b2;">
+          <p style="margin: 0 0 6px 0; font-size: 12px; font-weight: 500;">After opening settings:</p>
+          <ol style="margin: 0; padding-left: 22px; font-size: 12px;">
+            <li>Find "Microphone" in the site settings</li>
+            <li>Change it to "Allow"</li>
+            <li>Reload the extension</li>
+          </ol>
+        </div>
+      </div>
+    </div>
+    
+    <a href="https://support.google.com/chrome/answer/2693767" target="_blank" class="help-link">Microphone troubleshooting</a>
+    <div class="keyboard-shortcut" id="shortcutText">Shortcut: Ctrl+Shift+V</div>
+    <div id="asrMethod" class="asr-method">Using: Web Speech API</div>
+  </div>
+  <div class="footer">
+    <span>v1.0</span>
+  </div>
+  <script src="popup.js"></script>
+</body>
+</html> 

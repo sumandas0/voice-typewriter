@@ -1,0 +1,54 @@
+{
+  "manifest_version": 3,
+  "name": "Voice Typewriter",
+  "description": "Dictate text with optional Groq LLM enhancement and insert it at your cursor position",
+  "version": "1.0",
+  "action": {
+    "default_popup": "popup.html",
+    "default_icon": {
+      "16": "icons/icon16.png"
+    }
+  },
+  "icons": {
+    "16": "icons/icon16.png"
+  },
+  "permissions": [
+    "activeTab",
+    "scripting",
+    "storage",
+    "offscreen",
+    "tabs"
+  ],
+  "host_permissions": [
+    "https://api.groq.com/"
+  ],
+  "background": {
+    "service_worker": "background.js",
+    "type": "module"
+  },
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["content.js"]
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": ["groq-service.js"],
+      "matches": ["<all_urls>"]
+    }
+  ],
+  "options_page": "options.html",
+  "commands": {
+    "_execute_action": {
+      "suggested_key": {
+        "default": "Ctrl+Shift+V",
+        "mac": "Command+Shift+V"
+      },
+      "description": "Toggle Voice Typewriter (start/stop dictation)"
+    },
+    "cancel_dictation": {
+      "description": "Cancel current dictation without processing"
+    }
+  }
+} 
