@@ -18,12 +18,72 @@ const enhancementOptions = document.getElementById('enhancementOptions');
 const groqLlmModelSelect = document.getElementById('groqLlmModel');
 const enhancementTemperature = document.getElementById('enhancementTemperature');
 const temperatureValue = document.getElementById('temperatureValue');
+const privacyPolicyBtn = document.getElementById('privacyPolicyBtn');
+const privacyPolicyModal = document.getElementById('privacyPolicyModal');
+const privacyPolicyText = document.getElementById('privacyPolicyText');
+const closeButton = document.querySelector('.close-button');
 
 // Load saved options when the page loads
 document.addEventListener('DOMContentLoaded', () => {
   loadOptions();
   checkMicrophoneAccess();
+  setupPrivacyPolicyModal();
 });
+
+// Setup privacy policy modal
+function setupPrivacyPolicyModal() {
+  // Privacy policy button click handler
+  privacyPolicyBtn.addEventListener('click', () => {
+    // Load privacy policy content from the PRIVACY.md file
+    fetch(chrome.runtime.getURL('PRIVACY.md'))
+      .then(response => response.text())
+      .then(text => {
+        // Convert markdown to HTML (simple conversion for the most common elements)
+        const html = convertMarkdownToHtml(text);
+        privacyPolicyText.innerHTML = html;
+        privacyPolicyModal.style.display = 'block';
+      })
+      .catch(error => {
+        console.error('Error loading privacy policy:', error);
+        privacyPolicyText.innerHTML = '<p>Error loading privacy policy. Please try again later.</p>';
+        privacyPolicyModal.style.display = 'block';
+      });
+  });
+
+  // Close button click handler
+  closeButton.addEventListener('click', () => {
+    privacyPolicyModal.style.display = 'none';
+  });
+
+  // Close modal when clicking outside of it
+  window.addEventListener('click', (event) => {
+    if (event.target === privacyPolicyModal) {
+      privacyPolicyModal.style.display = 'none';
+    }
+  });
+}
+
+// Simple markdown to HTML converter
+function convertMarkdownToHtml(markdown) {
+  // Replace headers
+  let html = markdown
+    .replace(/# (.*$)/gm, '<h1>$1</h1>')
+    .replace(/## (.*$)/gm, '<h2>$1</h2>')
+    .replace(/### (.*$)/gm, '<h3>$1</h3>')
+    .replace(/\*\*(.*?)\*\*/gm, '<strong>$1</strong>')
+    .replace(/\*(.*?)\*/gm, '<em>$1</em>')
+    .replace(/\n/gm, '<br>');
+  
+  // Replace bullet points
+  html = html.replace(/^\* (.*$)/gm, '<ul><li>$1</li></ul>');
+  // Clean up the extra ul tags
+  html = html.replace(/<\/ul>\s*<ul>/gm, '');
+  
+  // Replace links
+  html = html.replace(/\[(.*?)\]\((.*?)\)/gm, '<a href="$2" target="_blank">$1</a>');
+  
+  return html;
+}
 
 // Check microphone access
 function checkMicrophoneAccess() {

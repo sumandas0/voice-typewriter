@@ -40,7 +40,7 @@
   ],
   "web_accessible_resources": [
     {
-      "resources": ["groq-service.js"],
+      "resources": ["groq-service.js", "PRIVACY.md"],
       "matches": ["<all_urls>"]
     }
   ],
